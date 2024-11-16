@@ -119,16 +119,20 @@ contract DSCEngine is ReentrancyGuard {
 
     function getHealthFactor() external view {}
 
-    function _getAccountInformation(address user) private view returns(uint256 totalDscMinted, uint256 collateralValueInUSD) {
+    function _getAccountInformation(address user)
+        private
+        view
+        returns (uint256 totalDscMinted, uint256 collateralValueInUSD)
+    {
         totalDscMinted = s_DSCMinted[user];
         collateralValueInUSD = getAccountCollateralValueInUSD(user);
     }
 
-    function _healthFactor(address user) private view returns(uint256) {
+    function _healthFactor(address user) private view returns (uint256) {
         (uint256 totalDscMinted, uint256 collateralValueInUSD) = _getAccountInformation(user);
         uint256 collateralAdjustedForThreshold = (collateralValueInUSD + LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION;
         return (collateralAdjustedForThreshold * PRECISION) / totalDscMinted;
-    } 
+    }
 
     function _revertIfHealthFactorIsBroken(address user) internal view {
         uint256 userHealthFactor = _healthFactor(user);
@@ -137,7 +141,7 @@ contract DSCEngine is ReentrancyGuard {
         }
     }
 
-    function getAccountCollateralValueInUSD(address user) public view returns(uint256 totalCollateralValueInUSD) {
+    function getAccountCollateralValueInUSD(address user) public view returns (uint256 totalCollateralValueInUSD) {
         for (uint256 i = 0; i < s_collateralTokens.length; i++) {
             address token = s_collateralTokens[i];
             uint256 amount = s_collateralDeposited[user][token];
@@ -147,9 +151,9 @@ contract DSCEngine is ReentrancyGuard {
         return totalCollateralValueInUSD;
     }
 
-    function getUSDValue(address token, uint256 amount) public view returns(uint256) {
+    function getUSDValue(address token, uint256 amount) public view returns (uint256) {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(s_priceFeeds[token]);
-        (,int256 price,,,) = priceFeed.latestRoundData();
+        (, int256 price,,,) = priceFeed.latestRoundData();
         return ((uint256(price) * ADDITIONAL_FEED_PRECISION) * amount) / PRECISION;
     }
 }
